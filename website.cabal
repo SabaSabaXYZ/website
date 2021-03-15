@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d1ec5dfa4cc510cab138672ec3fb62adf28f1c0201375eda36d389cdd1377686
+-- hash: 5b56f25d1b124af245aaaa6eec2b43613e0fdc60999133b89b5d229692d84c2d
 
 name:           website
 version:        0.1.0.0
@@ -33,10 +33,19 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      aeson ==1.5.6.0
+    , base >=4.7 && <5
+    , bytestring ==0.10.12.0
+    , containers ==0.6.2.1
+    , mtl ==2.2.2
+    , pandoc ==2.11.4
+    , servant ==0.18.2
+    , servant-server ==0.18.2
+    , text ==1.2.4.1
+    , warp ==3.3.14
   default-language: Haskell2010
 
-executable website-exe
+executable website
   main-is: Main.hs
   other-modules:
       Paths_website
@@ -44,7 +53,16 @@ executable website-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson ==1.5.6.0
+    , base >=4.7 && <5
+    , bytestring ==0.10.12.0
+    , containers ==0.6.2.1
+    , mtl ==2.2.2
+    , pandoc ==2.11.4
+    , servant ==0.18.2
+    , servant-server ==0.18.2
+    , text ==1.2.4.1
+    , warp ==3.3.14
     , website
   default-language: Haskell2010
 
@@ -57,6 +75,15 @@ test-suite website-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson ==1.5.6.0
+    , base >=4.7 && <5
+    , bytestring ==0.10.12.0
+    , containers ==0.6.2.1
+    , mtl ==2.2.2
+    , pandoc ==2.11.4
+    , servant ==0.18.2
+    , servant-server ==0.18.2
+    , text ==1.2.4.1
+    , warp ==3.3.14
     , website
   default-language: Haskell2010
