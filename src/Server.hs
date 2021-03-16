@@ -7,7 +7,7 @@ import Lucid
 import RenderBlog (renderBlog)
 import Servant
 import Servant.HTML.Lucid (HTML(..))
-import System.Directory (getCurrentDirectory)
+import System.Directory (getCurrentDirectory, getDirectoryContents)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
@@ -31,13 +31,13 @@ api :: Server Api
 api = mainPage :<|> blogPost :<|> themes :<|> testPage
 
 mainPage :: Handler (Html ())
-mainPage = pure $ htmlContainer $ h1_ $ toHtml siteTitle
+mainPage = htmlContainer $ h1_ $ toHtml siteTitle
 
 blogPost :: BlogId -> Handler (Html ())
-blogPost = pure . htmlContainer . renderBlog <=< findBlogPost
+blogPost = htmlContainer . renderBlog <=< findBlogPost
 
 findBlogPost :: BlogId -> Handler T.Text
-findBlogPost = liftIO . T.readFile . (<>) "static/" . flip (<>) ".md"
+findBlogPost = liftIO . T.readFile . (<>) staticPath . flip (<>) ".md"
 
 themes :: Server Themes
 themes = darkTheme :<|> lightTheme
@@ -50,17 +50,33 @@ darkTheme = pure mempty
 lightTheme :: Handler T.Text
 lightTheme = pure mempty
 
-htmlContainer :: Html a -> Html a
-htmlContainer contents = with doctypehtml_ [lang_ "en"] $ do
-  head_ $ do
-    title_ $ toHtml siteTitle
-    meta_ [charset_ "utf8"]
-    meta_ [name_ "description", content_ "width=device-width"]
-    link_ [rel_ "stylesheet", href_ "/dark"]
-  body_ $ div_ [role_ "main"] contents
+htmlContainer :: Html a -> Handler (Html ())
+htmlContainer contents = do
+  footer <- htmlFooter
+  pure $ with doctypehtml_ [lang_ "en"] $ do
+    head_ $ do
+      title_ $ toHtml siteTitle
+      meta_ [charset_ "utf8"]
+      meta_ [name_ "description", content_ "width=device-width"]
+      link_ [rel_ "stylesheet", href_ "/dark"]
+    body_ $ div_ [role_ "main"] $ do
+      contents
+      footer
+
+htmlFooter :: Handler (Html ())
+htmlFooter = liftIO blogLinks >>= pure . div_ [role_ "footer"] . ul_ [class_ "blog-links"]
+
+blogLinks :: IO (Html ())
+blogLinks = getDirectoryContents staticPath >>= pure . foldMap blogLink
+
+blogLink :: FilePath -> Html ()
+blogLink = li_ [class_ "blog-link"] . toHtml
 
 siteTitle :: T.Text
 siteTitle = "My Site"
 
 testPage :: Handler T.Text
 testPage = liftIO getCurrentDirectory >>= pure . T.pack
+
+staticPath :: FilePath
+staticPath = "static/"
