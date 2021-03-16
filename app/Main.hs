@@ -1,6 +1,14 @@
 module Main where
 
-import Lib
+import Control.Monad ((<=<))
+import Data.Maybe (fromMaybe, listToMaybe)
+import Network.Wai.Handler.Warp (Port(..), run)
+import Server
+import System.Environment (getArgs)
+import Text.Read (readMaybe)
 
 main :: IO ()
-main = someFunc
+main = getPort >>= flip run app
+
+getPort :: IO Port
+getPort = getArgs >>= pure . fromMaybe 5000 . (readMaybe <=< listToMaybe)

@@ -42,6 +42,9 @@ packages:
 #
 # extra-deps: []
 
+extra-deps:
+- servant-lucid-0.9.0.2@sha256:693278d574dba7313e931200118424762c02682bbc654e8866be4e6d1c73d816,1803
+
 # Override default flag values for local packages and extra-deps
 # flags: {}
 
