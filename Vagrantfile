@@ -15,6 +15,7 @@ sudo stack --allow-different-user test
 SCRIPT
 
 $run = <<-SCRIPT
+sudo killall website
 cd /vagrant
 sudo stack --allow-different-user exec website
 SCRIPT

@@ -1,11 +1,13 @@
 module Server where
 
+import Control.Monad ((<=<))
 import Control.Monad.IO.Class (liftIO)
 import CssContentType
 import Lucid
 import RenderBlog (renderBlog)
 import Servant
 import Servant.HTML.Lucid (HTML(..))
+import System.Directory (getCurrentDirectory)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
@@ -15,17 +17,18 @@ app = serve apiProxy api
 apiProxy :: Proxy Api
 apiProxy = Proxy
 
-type Api = MainPage :<|> BlogPost :<|> Themes
+type Api = MainPage :<|> BlogPost :<|> Themes :<|> TestPage
 type MainPage = Get '[HTML] (Html ())
-type BlogPost = "blog" :> QueryParam "id" BlogId :> Get '[HTML] (Html ())
+type BlogPost = "blog" :> Capture "id" BlogId :> Get '[HTML] (Html ())
 type Themes = DarkTheme :<|> LightTheme
 type DarkTheme = "dark" :> Get '[CSS] T.Text
 type LightTheme = "light" :> Get '[CSS] T.Text
+type TestPage = "test" :> Get '[HTML] T.Text
 
 type BlogId = FilePath
 
 api :: Server Api
-api = mainPage :<|> blogPost :<|> themes
+api = mainPage :<|> blogPost :<|> themes :<|> testPage
 
 mainPage :: Handler (Html ())
 mainPage = pure $ with doctypehtml_ [lang_ "en"] $ do
@@ -37,12 +40,11 @@ mainPage = pure $ with doctypehtml_ [lang_ "en"] $ do
   body_ $ div_ [role_ "main"] $ do
     h1_ $ toHtml siteTitle
 
-blogPost :: Maybe BlogId -> Handler (Html ())
-blogPost Nothing = mainPage
-blogPost (Just blogId) = findBlogPost blogId >>= pure . renderBlog
+blogPost :: BlogId -> Handler (Html ())
+blogPost = pure . renderBlog <=< findBlogPost
 
 findBlogPost :: BlogId -> Handler T.Text
-findBlogPost = liftIO . T.readFile . (<>) "/static/"
+findBlogPost = liftIO . T.readFile . (<>) "static/" . flip (<>) ".md"
 
 themes :: Server Themes
 themes = darkTheme :<|> lightTheme
@@ -60,3 +62,6 @@ htmlContainer = id
 
 siteTitle :: T.Text
 siteTitle = "My Site"
+
+testPage :: Handler T.Text
+testPage = liftIO getCurrentDirectory >>= pure . T.pack
