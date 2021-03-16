@@ -25,6 +25,7 @@ dependencies:
 - bytestring == 0.10.12.0
 - cmark == 0.6
 - containers == 0.6.2.1
+- http-media == 0.8.0.0
 - lucid == 2.9.12.1
 - mtl == 2.2.2
 - servant == 0.18.2
@@ -39,6 +40,7 @@ default-extensions:
 - FlexibleInstances
 - GADTs
 - KindSignatures
+- MultiParamTypeClasses
 - OverloadedStrings
 - StandaloneDeriving
 - TypeOperators
