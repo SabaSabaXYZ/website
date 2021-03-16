@@ -31,17 +31,10 @@ api :: Server Api
 api = mainPage :<|> blogPost :<|> themes :<|> testPage
 
 mainPage :: Handler (Html ())
-mainPage = pure $ with doctypehtml_ [lang_ "en"] $ do
-  head_ $ do
-    title_ $ toHtml siteTitle
-    meta_ [charset_ "utf8"]
-    meta_ [name_ "description", content_ "width=device-width"]
-    link_ [rel_ "stylesheet", href_ "/dark"]
-  body_ $ div_ [role_ "main"] $ do
-    h1_ $ toHtml siteTitle
+mainPage = pure $ htmlContainer $ h1_ $ toHtml siteTitle
 
 blogPost :: BlogId -> Handler (Html ())
-blogPost = pure . renderBlog <=< findBlogPost
+blogPost = pure . htmlContainer . renderBlog <=< findBlogPost
 
 findBlogPost :: BlogId -> Handler T.Text
 findBlogPost = liftIO . T.readFile . (<>) "static/" . flip (<>) ".md"
@@ -58,7 +51,13 @@ lightTheme :: Handler T.Text
 lightTheme = pure mempty
 
 htmlContainer :: Html a -> Html a
-htmlContainer = id
+htmlContainer contents = with doctypehtml_ [lang_ "en"] $ do
+  head_ $ do
+    title_ $ toHtml siteTitle
+    meta_ [charset_ "utf8"]
+    meta_ [name_ "description", content_ "width=device-width"]
+    link_ [rel_ "stylesheet", href_ "/dark"]
+  body_ $ div_ [role_ "main"] contents
 
 siteTitle :: T.Text
 siteTitle = "My Site"
