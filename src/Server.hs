@@ -1,8 +1,9 @@
 module Server where
 
 import CssContentType
-import Servant
 import Lucid
+import RenderBlog (renderBlog)
+import Servant
 import Servant.HTML.Lucid (HTML(..))
 import qualified Data.Text as T
 
