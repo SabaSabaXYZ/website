@@ -39,3 +39,6 @@ darkTheme = undefined
 
 lightTheme :: Handler T.Text
 lightTheme = undefined
+
+htmlContainer :: Html a -> Html a
+htmlContainer = id
