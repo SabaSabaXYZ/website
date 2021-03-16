@@ -20,25 +20,36 @@ type Themes = DarkTheme :<|> LightTheme
 type DarkTheme = "dark" :> Get '[CSS] T.Text
 type LightTheme = "light" :> Get '[CSS] T.Text
 
-type BlogId = Integer
+type BlogId = FilePath
 
 api :: Server Api
 api = mainPage :<|> blogPost :<|> themes
 
 mainPage :: Handler (Html ())
-mainPage = undefined
+mainPage = pure $ with doctypehtml_ [lang_ "en"] $ do
+  head_ $ do
+    title_ $ toHtml siteTitle
+    meta_ [charset_ "utf8"]
+    meta_ [name_ "description", content_ "width=device-width"]
+    link_ [rel_ "stylesheet", href_ "/dark"]
+  body_ $ do
+    h1_ $ toHtml siteTitle
 
 blogPost :: Maybe BlogId -> Handler (Html ())
-blogPost blogId = undefined
+blogPost Nothing = mainPage
+blogPost (Just blogId) = mainPage
 
 themes :: Server Themes
 themes = darkTheme :<|> lightTheme
 
 darkTheme :: Handler T.Text
-darkTheme = undefined
+darkTheme = pure mempty
 
 lightTheme :: Handler T.Text
-lightTheme = undefined
+lightTheme = pure mempty
 
 htmlContainer :: Html a -> Html a
 htmlContainer = id
+
+siteTitle :: T.Text
+siteTitle = "My Site"
