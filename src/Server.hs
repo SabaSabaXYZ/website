@@ -59,9 +59,9 @@ htmlContainer contents = do
       meta_ [charset_ "utf8"]
       meta_ [name_ "description", content_ "width=device-width"]
       link_ [rel_ "stylesheet", href_ "/dark"]
-    body_ $ div_ [role_ "main"] $ do
+    body_ $ do
       nav
-      contents
+      div_ [role_ "main"] contents
 
 navigation :: Handler (Html ())
 navigation = liftIO blogList >>= pure . div_ [role_ "navigation"] . ul_ [class_ "blog-links"]
