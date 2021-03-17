@@ -19,18 +19,17 @@ app = serve apiProxy api
 apiProxy :: Proxy Api
 apiProxy = Proxy
 
-type Api = MainPage :<|> BlogPost :<|> Themes :<|> TestPage
+type Api = MainPage :<|> BlogPost :<|> Themes
 type MainPage = Get '[HTML] (Html ())
 type BlogPost = "blog" :> Capture "id" BlogId :> Get '[HTML] (Html ())
 type Themes = DarkTheme :<|> LightTheme
 type DarkTheme = "dark" :> Get '[CSS] C.Css
 type LightTheme = "light" :> Get '[CSS] C.Css
-type TestPage = "test" :> Get '[HTML] T.Text
 
 type BlogId = FilePath
 
 api :: Server Api
-api = mainPage :<|> blogPost :<|> themes :<|> testPage
+api = mainPage :<|> blogPost :<|> themes
 
 mainPage :: Handler (Html ())
 mainPage = htmlContainer $ h1_ $ toHtml siteTitle
@@ -82,9 +81,6 @@ blogLink = pure . (<>) "/blog/" <=< T.stripSuffix markdownExtension
 
 siteTitle :: T.Text
 siteTitle = "My Site"
-
-testPage :: Handler T.Text
-testPage = liftIO getCurrentDirectory >>= pure . T.pack
 
 staticPath :: FilePath
 staticPath = "static/"
