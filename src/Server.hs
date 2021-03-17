@@ -3,6 +3,7 @@ module Server where
 import Control.Monad ((<=<), void)
 import Control.Monad.IO.Class (liftIO)
 import CssContentType
+import Data.Maybe (fromMaybe)
 import Lucid
 import RenderBlog (renderBlog)
 import Servant
@@ -21,13 +22,15 @@ apiProxy = Proxy
 
 type Api = Page :<|> Themes
 type Page = MainPage :<|> BlogPost
-type MainPage = Get '[HTML] (Html ())
-type BlogPost = "blog" :> Capture "id" BlogId :> Get '[HTML] (Html ())
+type MainPage = ThemeParam :> Get '[HTML] (Html ())
+type BlogPost = "blog" :> ThemeParam :> Capture "id" BlogId :> Get '[HTML] (Html ())
 type Themes = DarkTheme :<|> LightTheme
 type DarkTheme = "dark" :> Get '[CSS] C.Css
 type LightTheme = "light" :> Get '[CSS] C.Css
+type ThemeParam = QueryParam "light" Bool
 
 type BlogId = FilePath
+type UseTheme = Maybe Bool
 
 api :: Server Api
 api = page :<|> themes
@@ -35,11 +38,11 @@ api = page :<|> themes
 page :: Server Page
 page = mainPage :<|> blogPost
 
-mainPage :: Handler (Html ())
-mainPage = htmlContainer $ h1_ $ toHtml siteTitle
+mainPage :: UseTheme -> Handler (Html ())
+mainPage useLight = htmlContainer useLight $ h1_ $ toHtml siteTitle
 
-blogPost :: BlogId -> Handler (Html ())
-blogPost = htmlContainer . renderBlog <=< findBlogPost
+blogPost :: UseTheme -> BlogId -> Handler (Html ())
+blogPost useLight = htmlContainer useLight . renderBlog <=< findBlogPost
 
 findBlogPost :: BlogId -> Handler T.Text
 findBlogPost = liftIO . T.readFile . (<>) staticPath . flip (<>) (T.unpack markdownExtension)
@@ -55,15 +58,15 @@ darkTheme = pure $ darkStyle C.saddlebrown
 lightTheme :: Handler C.Css
 lightTheme = pure $ lightStyle C.blanchedalmond
 
-htmlContainer :: Html a -> Handler (Html ())
-htmlContainer contents = do
+htmlContainer :: UseTheme -> Html a -> Handler (Html ())
+htmlContainer useLight contents = do
   nav <- navigation
   pure $ void $ with doctypehtml_ [lang_ "en"] $ do
     head_ $ do
       title_ $ toHtml siteTitle
       meta_ [charset_ "utf8"]
       meta_ [name_ "description", content_ "width=device-width"]
-      link_ [rel_ "stylesheet", href_ "/dark"]
+      link_ [rel_ "stylesheet", href_ $ getTheme useLight]
     body_ $ do
       nav
       div_ [role_ "main"] contents
@@ -91,3 +94,9 @@ staticPath = "static/"
 
 markdownExtension :: T.Text
 markdownExtension = ".md"
+
+useTheme :: UseTheme -> Bool
+useTheme = fromMaybe False
+
+getTheme :: UseTheme -> T.Text
+getTheme theme = let themeValue = useTheme theme in if themeValue then "/light" else "/dark"
