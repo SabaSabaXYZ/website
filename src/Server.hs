@@ -22,6 +22,8 @@ apiProxy = Proxy
 
 type Api = Page :<|> Themes
 type Page = MainPage :<|> BlogPost
+-- TODO Turn MainPage into another BlogPost, and instead have some index.md file that I can look for.
+-- Perhaps have a config.json file to specify the index.md file and the static directory location.
 type MainPage = ThemeParam :> Get '[HTML] (Html ())
 type BlogPost = "blog" :> ThemeParam :> Capture "id" BlogId :> Get '[HTML] (Html ())
 type Themes = DarkTheme :<|> LightTheme
@@ -30,6 +32,7 @@ type LightTheme = "light" :> Get '[CSS] C.Css
 type ThemeParam = QueryParam "light" Bool
 
 type BlogId = FilePath
+-- TODO Use a ReaderT monad to insert this value into functions instead of passing it in explicitly.
 type UseLightTheme = Maybe Bool
 
 api :: Server Api
