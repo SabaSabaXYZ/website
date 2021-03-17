@@ -25,13 +25,13 @@ type Page = MainPage :<|> BlogPost
 type MainPage = ThemeParam :> Get '[HTML] (Html ())
 type BlogPost = ThemeParam :> Capture "id" BlogId :> Get '[HTML] (Html ())
 type Themes = "style" :> (DarkTheme :<|> LightTheme)
-type DarkTheme = "dark" :> Get '[CSS] C.Css
-type LightTheme = "light" :> Get '[CSS] C.Css
+type DarkTheme = "dark" :> QueryParam "red" Integer :> QueryParam "green" Integer :> QueryParam "blue" Integer :> Get '[CSS] C.Css
+type LightTheme = "light" :> QueryParam "red" Integer :> QueryParam "green" Integer :> QueryParam "blue" Integer :> Get '[CSS] C.Css
 type ThemeParam = QueryParam "light" Bool
 
 type BlogId = FilePath
--- TODO Use a ReaderT monad to insert this value into functions instead of passing it in explicitly.
 type UseLightTheme = Maybe Bool
+data LightDark = Light | Dark deriving (Eq)
 
 api :: Server Api
 api = page :<|> themes
@@ -51,13 +51,22 @@ findBlogPost = liftIO . T.readFile . (<>) staticPath . flip (<>) (T.unpack markd
 themes :: Server Themes
 themes = darkTheme :<|> lightTheme
 
--- TODO Modify this endpoint to take in a single hex colour value and produce a stylesheet from it.
-darkTheme :: Handler C.Css
-darkTheme = pure $ darkStyle C.saddlebrown
+darkTheme :: Maybe Integer -> Maybe Integer -> Maybe Integer -> Handler C.Css
+darkTheme red green blue = pure $ darkStyle $ getColorFromInput Dark red green blue
 
--- TODO Modify this endpoint to take in a single hex colour value and produce a stylesheet from it. The strategy used here should be the inverse of the one used by the dark path.
-lightTheme :: Handler C.Css
-lightTheme = pure $ lightStyle C.blanchedalmond
+lightTheme :: Maybe Integer -> Maybe Integer -> Maybe Integer -> Handler C.Css
+lightTheme red green blue = pure $ lightStyle $ getColorFromInput Light red green blue
+
+getColorFromInput :: LightDark -> Maybe Integer -> Maybe Integer -> Maybe Integer -> C.Color
+getColorFromInput lightDark redColor greenColor blueColor = do
+  let red = getIndividualColor lightDark redColor
+  let green = getIndividualColor lightDark greenColor
+  let blue = getIndividualColor lightDark blueColor
+  C.rgba red green blue 1
+
+getIndividualColor :: LightDark -> Maybe Integer -> Integer
+getIndividualColor Dark value = flip mod 0x100 $ fromMaybe 0x00 value
+getIndividualColor Light value = flip mod 0x100 $ fromMaybe 0xFF value
 
 htmlContainer :: UseLightTheme -> Html a -> Handler (Html ())
 htmlContainer useLight contents = do
