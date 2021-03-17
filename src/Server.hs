@@ -19,7 +19,8 @@ app = serve apiProxy api
 apiProxy :: Proxy Api
 apiProxy = Proxy
 
-type Api = MainPage :<|> BlogPost :<|> Themes
+type Api = Page :<|> Themes
+type Page = MainPage :<|> BlogPost
 type MainPage = Get '[HTML] (Html ())
 type BlogPost = "blog" :> Capture "id" BlogId :> Get '[HTML] (Html ())
 type Themes = DarkTheme :<|> LightTheme
@@ -29,7 +30,10 @@ type LightTheme = "light" :> Get '[CSS] C.Css
 type BlogId = FilePath
 
 api :: Server Api
-api = mainPage :<|> blogPost :<|> themes
+api = page :<|> themes
+
+page :: Server Page
+page = mainPage :<|> blogPost
 
 mainPage :: Handler (Html ())
 mainPage = htmlContainer $ h1_ $ toHtml siteTitle
