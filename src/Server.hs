@@ -50,7 +50,7 @@ darkTheme = pure $ darkStyle C.saddlebrown
 
 -- TODO Modify this endpoint to take in a single hex colour value and produce a stylesheet from it. The strategy used here should be the inverse of the one used by the dark path.
 lightTheme :: Handler C.Css
-lightTheme = pure $ lightStyle C.saddlebrown
+lightTheme = pure $ lightStyle C.blanchedalmond
 
 htmlContainer :: Html a -> Handler (Html ())
 htmlContainer contents = do
