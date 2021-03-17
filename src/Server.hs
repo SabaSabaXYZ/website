@@ -22,11 +22,9 @@ apiProxy = Proxy
 
 type Api = Page :<|> Themes
 type Page = MainPage :<|> BlogPost
--- TODO Turn MainPage into another BlogPost, and instead have some index.md file that I can look for.
--- Perhaps have a config.json file to specify the index.md file and the static directory location.
 type MainPage = ThemeParam :> Get '[HTML] (Html ())
-type BlogPost = "blog" :> ThemeParam :> Capture "id" BlogId :> Get '[HTML] (Html ())
-type Themes = DarkTheme :<|> LightTheme
+type BlogPost = ThemeParam :> Capture "id" BlogId :> Get '[HTML] (Html ())
+type Themes = "style" :> (DarkTheme :<|> LightTheme)
 type DarkTheme = "dark" :> Get '[CSS] C.Css
 type LightTheme = "light" :> Get '[CSS] C.Css
 type ThemeParam = QueryParam "light" Bool
@@ -42,7 +40,7 @@ page :: Server Page
 page = mainPage :<|> blogPost
 
 mainPage :: UseLightTheme -> Handler (Html ())
-mainPage useLight = htmlContainer useLight $ h1_ $ toHtml siteTitle
+mainPage = flip blogPost "index"
 
 blogPost :: UseLightTheme -> BlogId -> Handler (Html ())
 blogPost useLight = htmlContainer useLight . renderBlog <=< findBlogPost
@@ -90,7 +88,7 @@ makeLink :: UseLightTheme -> T.Text -> T.Text
 makeLink useLight link = let lightThemeOn = useLightTheme useLight in if lightThemeOn then link <> "?light=true" else link <> "?light=false"
 
 blogLink :: T.Text -> Maybe T.Text
-blogLink = pure . (<>) "/blog/" <=< T.stripSuffix markdownExtension
+blogLink = T.stripSuffix markdownExtension
 
 siteTitle :: T.Text
 siteTitle = "My Site"
@@ -105,4 +103,4 @@ useLightTheme :: UseLightTheme -> Bool
 useLightTheme = fromMaybe False
 
 getTheme :: UseLightTheme -> T.Text
-getTheme theme = let lightThemeOn = useLightTheme theme in if lightThemeOn then "/light" else "/dark"
+getTheme theme = let lightThemeOn = useLightTheme theme in if lightThemeOn then "/style/light" else "/style/dark"
