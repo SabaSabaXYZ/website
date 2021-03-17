@@ -30,7 +30,7 @@ type LightTheme = "light" :> Get '[CSS] C.Css
 type ThemeParam = QueryParam "light" Bool
 
 type BlogId = FilePath
-type UseTheme = Maybe Bool
+type UseLightTheme = Maybe Bool
 
 api :: Server Api
 api = page :<|> themes
@@ -38,10 +38,10 @@ api = page :<|> themes
 page :: Server Page
 page = mainPage :<|> blogPost
 
-mainPage :: UseTheme -> Handler (Html ())
+mainPage :: UseLightTheme -> Handler (Html ())
 mainPage useLight = htmlContainer useLight $ h1_ $ toHtml siteTitle
 
-blogPost :: UseTheme -> BlogId -> Handler (Html ())
+blogPost :: UseLightTheme -> BlogId -> Handler (Html ())
 blogPost useLight = htmlContainer useLight . renderBlog <=< findBlogPost
 
 findBlogPost :: BlogId -> Handler T.Text
@@ -58,9 +58,9 @@ darkTheme = pure $ darkStyle C.saddlebrown
 lightTheme :: Handler C.Css
 lightTheme = pure $ lightStyle C.blanchedalmond
 
-htmlContainer :: UseTheme -> Html a -> Handler (Html ())
+htmlContainer :: UseLightTheme -> Html a -> Handler (Html ())
 htmlContainer useLight contents = do
-  nav <- navigation
+  nav <- navigation useLight
   pure $ void $ with doctypehtml_ [lang_ "en"] $ do
     head_ $ do
       title_ $ toHtml siteTitle
@@ -71,17 +71,20 @@ htmlContainer useLight contents = do
       nav
       div_ [role_ "main"] contents
 
-navigation :: Handler (Html ())
-navigation = liftIO blogList >>= pure . div_ [role_ "navigation"] . ul_ [class_ "blog-links"]
+navigation :: UseLightTheme -> Handler (Html ())
+navigation useLight = liftIO (blogList useLight) >>= pure . div_ [role_ "navigation"] . ul_ [class_ "blog-links"]
 
-blogList :: IO (Html ())
-blogList = getDirectoryContents staticPath >>= pure . foldMap blogListItem . filter (T.isSuffixOf markdownExtension) . fmap T.pack
+blogList :: UseLightTheme -> IO (Html ())
+blogList useLight = getDirectoryContents staticPath >>= pure . foldMap (blogListItem useLight) . filter (T.isSuffixOf markdownExtension) . fmap T.pack
 
-blogListItem :: T.Text -> Html ()
-blogListItem path = do
+blogListItem :: UseLightTheme -> T.Text -> Html ()
+blogListItem useLight path = do
   case blogLink path of
     Nothing -> pure $ mempty
-    Just file -> li_ [class_ "blog-link"] $ a_ [href_ file] $ toHtml file
+    Just file -> li_ [class_ "blog-link"] $ a_ [href_ $ makeLink useLight file] $ toHtml file
+
+makeLink :: UseLightTheme -> T.Text -> T.Text
+makeLink useLight link = let lightThemeOn = useLightTheme useLight in if lightThemeOn then link <> "?light=true" else link <> "?light=false"
 
 blogLink :: T.Text -> Maybe T.Text
 blogLink = pure . (<>) "/blog/" <=< T.stripSuffix markdownExtension
@@ -95,8 +98,8 @@ staticPath = "static/"
 markdownExtension :: T.Text
 markdownExtension = ".md"
 
-useTheme :: UseTheme -> Bool
-useTheme = fromMaybe False
+useLightTheme :: UseLightTheme -> Bool
+useLightTheme = fromMaybe False
 
-getTheme :: UseTheme -> T.Text
-getTheme theme = let themeValue = useTheme theme in if themeValue then "/light" else "/dark"
+getTheme :: UseLightTheme -> T.Text
+getTheme theme = let lightThemeOn = useLightTheme theme in if lightThemeOn then "/light" else "/dark"

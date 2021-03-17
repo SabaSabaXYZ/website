@@ -32,6 +32,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.network "forwarded_port", guest: 80, host: 7000
+  config.vm.network "forwarded_port", guest: 22, host: 2822, id: "ssh"
   config.vm.provision "shell", inline: $script
 
   config.vm.provision "build", type: "shell", run: "never", inline: $build
