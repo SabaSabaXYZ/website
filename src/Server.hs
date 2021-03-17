@@ -7,7 +7,9 @@ import Lucid
 import RenderBlog (renderBlog)
 import Servant
 import Servant.HTML.Lucid (HTML(..))
+import StyleSheet
 import System.Directory (getCurrentDirectory, getDirectoryContents)
+import qualified Clay as C
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
@@ -21,8 +23,8 @@ type Api = MainPage :<|> BlogPost :<|> Themes :<|> TestPage
 type MainPage = Get '[HTML] (Html ())
 type BlogPost = "blog" :> Capture "id" BlogId :> Get '[HTML] (Html ())
 type Themes = DarkTheme :<|> LightTheme
-type DarkTheme = "dark" :> Get '[CSS] T.Text
-type LightTheme = "light" :> Get '[CSS] T.Text
+type DarkTheme = "dark" :> Get '[CSS] C.Css
+type LightTheme = "light" :> Get '[CSS] C.Css
 type TestPage = "test" :> Get '[HTML] T.Text
 
 type BlogId = FilePath
@@ -43,12 +45,12 @@ themes :: Server Themes
 themes = darkTheme :<|> lightTheme
 
 -- TODO Modify this endpoint to take in a single hex colour value and produce a stylesheet from it.
-darkTheme :: Handler T.Text
-darkTheme = pure mempty
+darkTheme :: Handler C.Css
+darkTheme = pure $ darkStyle C.saddlebrown
 
 -- TODO Modify this endpoint to take in a single hex colour value and produce a stylesheet from it. The strategy used here should be the inverse of the one used by the dark path.
-lightTheme :: Handler T.Text
-lightTheme = pure mempty
+lightTheme :: Handler C.Css
+lightTheme = pure $ lightStyle C.saddlebrown
 
 htmlContainer :: Html a -> Handler (Html ())
 htmlContainer contents = do
