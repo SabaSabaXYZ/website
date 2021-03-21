@@ -51,5 +51,8 @@ getColorFromInput lightDark redColor greenColor blueColor = do
   C.rgba red green blue 1
 
 getIndividualColor :: LightDark -> Maybe Integer -> Integer
-getIndividualColor Dark value = flip mod 0x100 $ fromMaybe 0x00 value
-getIndividualColor Light value = flip mod 0x100 $ fromMaybe 0xFF value
+getIndividualColor color = flip mod 0x100 . fromMaybe (defaultColor color)
+
+defaultColor :: LightDark -> Integer
+defaultColor Dark = 0x00
+defaultColor Light = 0xFF
