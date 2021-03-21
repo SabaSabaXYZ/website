@@ -15,3 +15,6 @@ type Themes = "style" :> (DarkTheme :<|> LightTheme)
 type DarkTheme = "dark" :> QueryParam "red" Integer :> QueryParam "green" Integer :> QueryParam "blue" Integer :> Get '[CSS] C.Css
 type LightTheme = "light" :> QueryParam "red" Integer :> QueryParam "green" Integer :> QueryParam "blue" Integer :> Get '[CSS] C.Css
 type ThemeParam = QueryParam "theme" Theme
+
+apiProxy :: Proxy Api
+apiProxy = Proxy

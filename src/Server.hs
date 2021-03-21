@@ -16,9 +16,6 @@ import qualified Data.Text.IO as T
 app :: Application
 app = serve apiProxy api
 
-apiProxy :: Proxy Api
-apiProxy = Proxy
-
 api :: Server Api
 api = page :<|> themes
 
