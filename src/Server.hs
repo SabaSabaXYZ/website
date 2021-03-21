@@ -27,7 +27,7 @@ type BlogPost = ThemeParam :> Capture "id" BlogId :> Get '[HTML] (Html ())
 type Themes = "style" :> (DarkTheme :<|> LightTheme)
 type DarkTheme = "dark" :> QueryParam "red" Integer :> QueryParam "green" Integer :> QueryParam "blue" Integer :> Get '[CSS] C.Css
 type LightTheme = "light" :> QueryParam "red" Integer :> QueryParam "green" Integer :> QueryParam "blue" Integer :> Get '[CSS] C.Css
-type ThemeParam = QueryParam "light" Bool
+type ThemeParam = QueryParam "theme" Theme
 
 api :: Server Api
 api = page :<|> themes
@@ -35,11 +35,11 @@ api = page :<|> themes
 page :: Server Page
 page = mainPage :<|> blogPost
 
-mainPage :: UseLightTheme -> Handler (Html ())
+mainPage :: Maybe Theme -> Handler (Html ())
 mainPage = flip blogPost "index"
 
-blogPost :: UseLightTheme -> BlogId -> Handler (Html ())
-blogPost useLight = htmlContainer useLight . renderBlog <=< findBlogPost
+blogPost :: Maybe Theme -> BlogId -> Handler (Html ())
+blogPost theme = htmlContainer theme . renderBlog <=< findBlogPost
 
 findBlogPost :: BlogId -> Handler T.Text
 findBlogPost = liftIO . T.readFile . (<>) staticPath . flip (<>) (T.unpack markdownExtension)

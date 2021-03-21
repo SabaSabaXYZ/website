@@ -40,36 +40,36 @@ instance FromHttpApiData Theme where
 instance ToHttpApiData Theme where
   toQueryParam theme = toQueryParam (themeType theme) <> "," <> toQueryParam (themeRed theme) <> "," <> toQueryParam (themeGreen theme) <> "," <> toQueryParam (themeBlue theme)
 
-type UseLightTheme = Maybe Bool
 type BlogId = FilePath
 
-htmlContainer :: (MonadIO m) => UseLightTheme -> Html a -> m (Html ())
-htmlContainer useLight contents = do
-  nav <- navigation useLight
+htmlContainer :: (MonadIO m) => Maybe Theme -> Html a -> m (Html ())
+htmlContainer theme contents = do
+  nav <- navigation theme
   pure $ void $ with doctypehtml_ [lang_ "en"] $ do
     head_ $ do
       title_ $ toHtml siteTitle
       meta_ [charset_ "utf8"]
       meta_ [name_ "description", content_ "width=device-width"]
-      link_ [rel_ "stylesheet", href_ $ getTheme useLight]
+      link_ [rel_ "stylesheet", href_ $ getTheme theme]
     body_ $ do
       nav
       div_ [role_ "main"] contents
 
-navigation :: (MonadIO m) => UseLightTheme -> m (Html ())
-navigation useLight = blogList useLight >>= pure . div_ [role_ "navigation"] . ul_ [class_ "blog-links"]
+navigation :: (MonadIO m) => Maybe Theme -> m (Html ())
+navigation theme = blogList theme >>= pure . div_ [role_ "navigation"] . ul_ [class_ "blog-links"]
 
-blogList :: (MonadIO m) => UseLightTheme -> m (Html ())
-blogList useLight = liftIO $ getDirectoryContents staticPath >>= pure . foldMap (blogListItem useLight) . filter (T.isSuffixOf markdownExtension) . fmap T.pack
+blogList :: (MonadIO m) => Maybe Theme -> m (Html ())
+blogList theme = liftIO $ getDirectoryContents staticPath >>= pure . foldMap (blogListItem theme) . filter (T.isSuffixOf markdownExtension) . fmap T.pack
 
-blogListItem :: UseLightTheme -> T.Text -> Html ()
-blogListItem useLight path = do
+blogListItem :: Maybe Theme -> T.Text -> Html ()
+blogListItem theme path = do
   case blogLink path of
     Nothing -> pure $ mempty
-    Just file -> li_ [class_ "blog-link"] $ a_ [href_ $ makeLink useLight file] $ toHtml file
+    Just file -> li_ [class_ "blog-link"] $ a_ [href_ $ makeLink theme file] $ toHtml file
 
-makeLink :: UseLightTheme -> T.Text -> T.Text
-makeLink useLight link = let lightThemeOn = useLightTheme useLight in if lightThemeOn then link <> "?light=true" else link <> "?light=false"
+makeLink :: Maybe Theme -> T.Text -> T.Text
+makeLink Nothing link = link
+makeLink (Just theme) link = link <> "?theme=" <> toQueryParam theme
 
 blogLink :: T.Text -> Maybe T.Text
 blogLink = T.stripSuffix markdownExtension
@@ -83,8 +83,8 @@ staticPath = "static/"
 markdownExtension :: T.Text
 markdownExtension = ".md"
 
-useLightTheme :: UseLightTheme -> Bool
-useLightTheme = fromMaybe False
-
-getTheme :: UseLightTheme -> T.Text
-getTheme theme = let lightThemeOn = useLightTheme theme in if lightThemeOn then "/style/light" else "/style/dark"
+getTheme :: Maybe Theme -> T.Text
+getTheme Nothing = "/style/dark"
+getTheme (Just theme)
+  | themeType theme == Dark = "/style/dark?red=" <> toQueryParam (themeRed theme) <> "&green=" <> toQueryParam (themeGreen theme) <> "&blue=" <> toQueryParam (themeBlue theme)
+  | themeType theme == Light = "/style/light?red=" <> toQueryParam (themeRed theme) <> "&green=" <> toQueryParam (themeGreen theme) <> "&blue=" <> toQueryParam (themeBlue theme)
