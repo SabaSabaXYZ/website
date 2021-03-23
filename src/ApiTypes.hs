@@ -1,5 +1,6 @@
 module ApiTypes where
 
+import Control.Monad ((<=<))
 import CssContentType
 import Lucid
 import Servant
@@ -37,10 +38,11 @@ instance FromHttpApiData Theme where
   parseQueryParam theme = do
     case T.splitOn "," theme of
       [lightText, redText, greenText, blueText] -> do
+        let parseColorComponent = pure . flip mod 0x100 <=< parseQueryParam
         light <- parseQueryParam lightText
-        red <- parseQueryParam redText
-        green <- parseQueryParam greenText
-        blue <- parseQueryParam blueText
+        red <- parseColorComponent redText
+        green <- parseColorComponent greenText
+        blue <- parseColorComponent blueText
         pure $ Theme { themeType = light, themeRed = red, themeGreen = green, themeBlue = blue }
       _ -> Left $ "Invalid value '" <> theme <> "'. Value must contain four integer values delimited by commas."
 
