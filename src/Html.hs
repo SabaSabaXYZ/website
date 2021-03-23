@@ -18,7 +18,7 @@ htmlContainer theme contents = do
       title_ $ toHtml siteTitle
       meta_ [charset_ "utf8"]
       meta_ [name_ "description", content_ "width=device-width"]
-      link_ [rel_ "stylesheet", href_ $ getTheme theme]
+      link_ [rel_ "stylesheet", href_ $ safeStylingLink theme]
     body_ $ do
       nav
       div_ [role_ "main"] contents
@@ -46,6 +46,3 @@ staticPath = "static/"
 
 markdownExtension :: T.Text
 markdownExtension = ".md"
-
-getTheme :: Maybe Theme -> T.Text
-getTheme theme = safeStylingLink theme
