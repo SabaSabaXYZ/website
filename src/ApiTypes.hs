@@ -7,13 +7,11 @@ import Servant.HTML.Lucid (HTML(..))
 import qualified Clay as C
 import qualified Data.Text as T
 
-type Api = Page :<|> Themes
+type Api = Styling :<|> Page
 type Page = MainPage :<|> BlogPost
 type MainPage = ThemeParam :> Get '[HTML] (Html ())
 type BlogPost = ThemeParam :> Capture "id" BlogId :> Get '[HTML] (Html ())
-type Themes = DarkTheme :<|> LightTheme
-type DarkTheme = "style" :> "dark" :> QueryParam "red" Integer :> QueryParam "green" Integer :> QueryParam "blue" Integer :> Get '[CSS] C.Css
-type LightTheme = "style" :> "light" :> QueryParam "red" Integer :> QueryParam "green" Integer :> QueryParam "blue" Integer :> Get '[CSS] C.Css
+type Styling = "style" :> ThemeParam :> Get '[CSS] C.Css
 type ThemeParam = QueryParam "theme" Theme
 
 type BlogId = FilePath
@@ -52,11 +50,8 @@ instance ToHttpApiData Theme where
 apiProxy :: Proxy Api
 apiProxy = Proxy
 
-safeBlogLink :: MkLink BlogPost Link
-safeBlogLink = safeLink apiProxy (Proxy :: Proxy BlogPost)
+safeBlogLink :: Maybe Theme -> BlogId -> T.Text
+safeBlogLink theme blogId = toUrlPiece $ safeLink apiProxy (Proxy @BlogPost) theme blogId
 
-safeDarkThemeLink :: MkLink DarkTheme Link
-safeDarkThemeLink = safeLink apiProxy (Proxy :: Proxy DarkTheme)
-
-safeLightThemeLink :: MkLink LightTheme Link
-safeLightThemeLink = safeLink apiProxy (Proxy :: Proxy LightTheme)
+safeStylingLink :: Maybe Theme -> T.Text
+safeStylingLink theme = toUrlPiece $ safeLink apiProxy (Proxy @Styling) theme

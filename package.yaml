@@ -45,6 +45,7 @@ default-extensions:
 - MultiParamTypeClasses
 - OverloadedStrings
 - StandaloneDeriving
+- TypeApplications
 - TypeOperators
 
 library:

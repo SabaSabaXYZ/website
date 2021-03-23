@@ -33,11 +33,7 @@ blogListItem :: Maybe Theme -> T.Text -> Html ()
 blogListItem theme path = do
   case blogLink path of
     Nothing -> pure $ mempty
-    Just file -> li_ [class_ "blog-link"] $ a_ [href_ $ makeLink theme file] $ toHtml file
-
-makeLink :: Maybe Theme -> T.Text -> T.Text
-makeLink Nothing link = link
-makeLink (Just theme) link = link <> "?theme=" <> toQueryParam theme
+    Just file -> li_ [class_ "blog-link"] $ a_ [href_ $ safeBlogLink theme $ T.unpack file] $ toHtml file
 
 blogLink :: T.Text -> Maybe T.Text
 blogLink = T.stripSuffix markdownExtension
@@ -52,7 +48,4 @@ markdownExtension :: T.Text
 markdownExtension = ".md"
 
 getTheme :: Maybe Theme -> T.Text
-getTheme Nothing = "/style/dark"
-getTheme (Just theme)
-  | themeType theme == Dark = "/style/dark?red=" <> toQueryParam (themeRed theme) <> "&green=" <> toQueryParam (themeGreen theme) <> "&blue=" <> toQueryParam (themeBlue theme)
-  | themeType theme == Light = "/style/light?red=" <> toQueryParam (themeRed theme) <> "&green=" <> toQueryParam (themeGreen theme) <> "&blue=" <> toQueryParam (themeBlue theme)
+getTheme theme = safeStylingLink theme

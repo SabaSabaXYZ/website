@@ -17,7 +17,7 @@ app :: Application
 app = serve apiProxy api
 
 api :: Server Api
-api = page :<|> themes
+api = styling :<|> page
 
 page :: Server Page
 page = mainPage :<|> blogPost
@@ -31,25 +31,20 @@ blogPost theme = htmlContainer theme . renderBlog <=< findBlogPost
 findBlogPost :: BlogId -> Handler T.Text
 findBlogPost = liftIO . T.readFile . (<>) staticPath . flip (<>) (T.unpack markdownExtension)
 
-themes :: Server Themes
-themes = darkTheme :<|> lightTheme
+styling :: Maybe Theme -> Handler C.Css
+styling Nothing = pure $ darkStyle $ getColorFromInput 0 0 0
+styling (Just theme) = pure $ getStyleFromTheme (themeType theme) $ getColorFromInput (themeRed theme) (themeGreen theme) (themeBlue theme)
 
-darkTheme :: Maybe Integer -> Maybe Integer -> Maybe Integer -> Handler C.Css
-darkTheme red green blue = pure $ darkStyle $ getColorFromInput Dark red green blue
+getStyleFromTheme :: LightDark -> C.Color -> C.Css
+getStyleFromTheme Dark = darkStyle
+getStyleFromTheme Light = lightStyle
 
-lightTheme :: Maybe Integer -> Maybe Integer -> Maybe Integer -> Handler C.Css
-lightTheme red green blue = pure $ lightStyle $ getColorFromInput Light red green blue
-
-getColorFromInput :: LightDark -> Maybe Integer -> Maybe Integer -> Maybe Integer -> C.Color
-getColorFromInput lightDark redColor greenColor blueColor = do
-  let red = getIndividualColor lightDark redColor
-  let green = getIndividualColor lightDark greenColor
-  let blue = getIndividualColor lightDark blueColor
+getColorFromInput :: Integer -> Integer -> Integer -> C.Color
+getColorFromInput redColor greenColor blueColor = do
+  let red = getIndividualColor redColor
+  let green = getIndividualColor greenColor
+  let blue = getIndividualColor blueColor
   C.rgba red green blue 1
 
-getIndividualColor :: LightDark -> Maybe Integer -> Integer
-getIndividualColor color = flip mod 0x100 . fromMaybe (defaultColor color)
-
-defaultColor :: LightDark -> Integer
-defaultColor Dark = 0x00
-defaultColor Light = 0xFF
+getIndividualColor :: Integer -> Integer
+getIndividualColor = flip mod 0x100
