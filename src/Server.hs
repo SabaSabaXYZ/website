@@ -3,7 +3,6 @@ module Server where
 import ApiTypes
 import Control.Monad ((<=<))
 import Control.Monad.IO.Class (liftIO)
-import Data.Maybe (fromMaybe)
 import Html
 import Lucid
 import RenderBlog (renderBlog)
