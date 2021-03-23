@@ -52,20 +52,11 @@ instance ToHttpApiData Theme where
 apiProxy :: Proxy Api
 apiProxy = Proxy
 
-blogProxy :: Proxy BlogPost
-blogProxy = Proxy
-
-darkThemeProxy :: Proxy DarkTheme
-darkThemeProxy = Proxy
-
-lightThemeProxy :: Proxy LightTheme
-lightThemeProxy = Proxy
-
 safeBlogLink :: MkLink BlogPost Link
-safeBlogLink = safeLink apiProxy blogProxy
+safeBlogLink = safeLink apiProxy (Proxy :: Proxy BlogPost)
 
 safeDarkThemeLink :: MkLink DarkTheme Link
-safeDarkThemeLink = safeLink apiProxy darkThemeProxy
+safeDarkThemeLink = safeLink apiProxy (Proxy :: Proxy DarkTheme)
 
 safeLightThemeLink :: MkLink LightTheme Link
-safeLightThemeLink = safeLink apiProxy lightThemeProxy
+safeLightThemeLink = safeLink apiProxy (Proxy :: Proxy LightTheme)
