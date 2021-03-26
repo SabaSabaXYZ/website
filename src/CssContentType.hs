@@ -11,4 +11,4 @@ instance Accept CSS where
   contentType _ = "text" // "css" /: ("charset", "utf-8")
 
 instance MimeRender CSS (C.Css) where
-  mimeRender _ val = encodeUtf8 $ C.render val
+  mimeRender _ val = encodeUtf8 $ C.renderWith C.compact [] val
