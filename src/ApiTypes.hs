@@ -20,13 +20,13 @@ type BlogId = FilePath
 data LightDark = Light | Dark deriving (Eq)
 
 instance FromHttpApiData LightDark where
-  parseQueryParam "0" = Right Dark
-  parseQueryParam "1" = Right Light
-  parseQueryParam x = Left $ "Invalid value " <> x <> ". Value must be either '0' or '1'."
+  parseQueryParam "dark" = Right Dark
+  parseQueryParam "light" = Right Light
+  parseQueryParam x = Left $ "Invalid value " <> x <> ". Value must be either 'dark' or 'light'."
 
 instance ToHttpApiData LightDark where
-  toQueryParam Dark = "0"
-  toQueryParam Light = "1"
+  toQueryParam Dark = "dark"
+  toQueryParam Light = "light"
 
 data Theme = Theme { themeType :: !LightDark
                    , themeRed :: !Integer
@@ -42,7 +42,7 @@ instance FromHttpApiData Theme where
     green <- parseColorComponent greenText
     blue <- parseColorComponent blueText
     pure $ Theme { themeType = light, themeRed = red, themeGreen = green, themeBlue = blue }
-  parseQueryParam theme = Left $ "Invalid value '" <> theme <> "'. Value must contain four integer values delimited by commas."
+  parseQueryParam theme = Left $ "Invalid value '" <> theme <> "'. Value must contain four values delimited by commas."
 
 instance ToHttpApiData Theme where
   toQueryParam theme = toQueryParam (themeType theme) <> "," <> toQueryParam (themeRed theme) <> "," <> toQueryParam (themeGreen theme) <> "," <> toQueryParam (themeBlue theme)
