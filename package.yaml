@@ -33,6 +33,7 @@ dependencies:
 - servant == 0.18.2
 - servant-lucid == 0.9.0.2
 - servant-server == 0.18.2
+- tagsoup == 0.14.8
 - text == 1.2.4.1
 - warp == 3.3.14
 
