@@ -5,6 +5,7 @@ import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO(..), liftIO)
 import Data.Maybe (fromMaybe)
 import Lucid
+import Sanitize
 import Servant
 import System.Directory (getDirectoryContents)
 import qualified Data.Text as T
@@ -13,7 +14,7 @@ import qualified Data.Text.IO as T
 htmlContainer :: (MonadIO m) => Maybe Theme -> Html a -> m (Html ())
 htmlContainer theme contents = do
   nav <- navigation theme
-  pure $ void $ with doctypehtml_ [lang_ "en"] $ do
+  pure $ sanitizeHtml $ void $ with doctypehtml_ [lang_ "en"] $ do
     head_ $ do
       title_ $ toHtml siteTitle
       meta_ [charset_ "utf8"]
