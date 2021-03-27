@@ -31,10 +31,8 @@ blogList :: (MonadIO m) => Maybe Theme -> m (Html ())
 blogList theme = liftIO $ getDirectoryContents staticPath >>= pure . foldMap (blogListItem theme) . filter (T.isSuffixOf markdownExtension) . fmap T.pack
 
 blogListItem :: Maybe Theme -> T.Text -> Html ()
-blogListItem theme path = do
-  case blogLink path of
-    Nothing -> pure $ mempty
-    Just file -> li_ [class_ "blog-link"] $ a_ [href_ $ safeBlogLink theme $ T.unpack file] $ toHtml file
+blogListItem theme (blogLink -> Nothing) = pure $ mempty
+blogListItem theme (blogLink -> (Just file)) = li_ [class_ "blog-link"] $ a_ [href_ $ safeBlogLink theme $ T.unpack file] $ toHtml file
 
 blogLink :: T.Text -> Maybe T.Text
 blogLink = T.stripSuffix markdownExtension

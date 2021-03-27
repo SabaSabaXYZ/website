@@ -35,16 +35,14 @@ data Theme = Theme { themeType :: !LightDark
                    }
 
 instance FromHttpApiData Theme where
-  parseQueryParam theme = do
-    case T.splitOn "," theme of
-      [lightText, redText, greenText, blueText] -> do
-        let parseColorComponent = pure . flip mod 0x100 <=< parseQueryParam
-        light <- parseQueryParam lightText
-        red <- parseColorComponent redText
-        green <- parseColorComponent greenText
-        blue <- parseColorComponent blueText
-        pure $ Theme { themeType = light, themeRed = red, themeGreen = green, themeBlue = blue }
-      _ -> Left $ "Invalid value '" <> theme <> "'. Value must contain four integer values delimited by commas."
+  parseQueryParam (T.splitOn "," -> [lightText, redText, greenText, blueText]) = do
+    let parseColorComponent = pure . flip mod 0x100 <=< parseQueryParam
+    light <- parseQueryParam lightText
+    red <- parseColorComponent redText
+    green <- parseColorComponent greenText
+    blue <- parseColorComponent blueText
+    pure $ Theme { themeType = light, themeRed = red, themeGreen = green, themeBlue = blue }
+  parseQueryParam theme = Left $ "Invalid value '" <> theme <> "'. Value must contain four integer values delimited by commas."
 
 instance ToHttpApiData Theme where
   toQueryParam theme = toQueryParam (themeType theme) <> "," <> toQueryParam (themeRed theme) <> "," <> toQueryParam (themeGreen theme) <> "," <> toQueryParam (themeBlue theme)
