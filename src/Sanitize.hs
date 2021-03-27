@@ -8,4 +8,5 @@ sanitizeHtml :: Html () -> Html ()
 sanitizeHtml = toHtmlRaw . renderTree . transformTree sanitizeTree . parseTree . renderText
 
 sanitizeTree :: TagTree T.Text -> [TagTree T.Text]
-sanitizeTree = pure
+sanitizeTree (TagBranch "pre" attributes children) = [TagBranch "pre" (("tabindex", "0") : attributes) children]
+sanitizeTree x = [x]
