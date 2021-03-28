@@ -3,6 +3,7 @@ module Html where
 import ApiTypes
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO(..), liftIO)
+import Data.List (sort)
 import Data.Maybe (fromMaybe)
 import Lucid
 import Sanitize
@@ -32,7 +33,7 @@ navigation theme = do
     blogListItems
 
 blogList :: (MonadIO m) => Maybe Theme -> m (Html ())
-blogList theme = liftIO $ getDirectoryContents staticPath >>= pure . foldMap (blogListItem theme) . filter (T.isSuffixOf markdownExtension) . fmap T.pack
+blogList theme = liftIO $ getDirectoryContents staticPath >>= pure . foldMap (blogListItem theme) . sort . filter (T.isSuffixOf markdownExtension) . fmap T.pack
 
 blogListItem :: Maybe Theme -> T.Text -> Html ()
 blogListItem theme (blogLink -> Nothing) = pure $ mempty
