@@ -2,7 +2,7 @@ module StyleSheet where
 
 import Clay
 import Data.Monoid
-import Prelude hiding (rem)
+import Prelude hiding (div, rem)
 
 type ColorAction = Float -> Color -> Color
 
@@ -20,6 +20,7 @@ makeStyle colorAction themeColor = do
   codeStyle
   headerStyle
   linkStyle colorAction themeColor
+  navigationStyle
 
 bodyStyle :: ColorAction -> Color -> Css
 bodyStyle action themeColor = body ? do
@@ -72,3 +73,12 @@ codeStyle = do
   pre ? do
     padding (rem 0.5) (rem 0.5) (rem 0.5) (rem 0.5)
     overflowX scroll
+
+navigationStyle :: Css
+navigationStyle = do
+  div # ("role" @= "navigation") |> h2 ? smallHeaderStyle
+  where
+    smallHeaderStyle = do
+      fontSize $ rem 1.414
+      paddingBottom $ rem 0
+      textAlign inherit

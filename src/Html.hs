@@ -21,11 +21,15 @@ htmlContainer theme contents = do
       meta_ [name_ "description", content_ "width=device-width"]
       link_ [rel_ "stylesheet", href_ $ safeStylingLink theme]
     body_ $ do
-      nav
       div_ [role_ "main"] contents
+      nav
 
 navigation :: (MonadIO m) => Maybe Theme -> m (Html ())
-navigation theme = blogList theme >>= pure . div_ [role_ "navigation"] . ul_ [class_ "blog-links"]
+navigation theme = do
+  blogListItems <- blogList theme >>= pure . ul_ [class_ "blog-links"]
+  pure $ div_ [role_ "navigation"] $ do
+    h2_ "Articles:"
+    blogListItems
 
 blogList :: (MonadIO m) => Maybe Theme -> m (Html ())
 blogList theme = liftIO $ getDirectoryContents staticPath >>= pure . foldMap (blogListItem theme) . filter (T.isSuffixOf markdownExtension) . fmap T.pack
