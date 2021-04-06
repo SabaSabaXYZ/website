@@ -30,6 +30,7 @@ dependencies:
 - http-media == 0.8.0.0
 - lucid == 2.9.12.1
 - mtl == 2.2.2
+- safe-exceptions == 0.1.7.1
 - servant == 0.18.2
 - servant-lucid == 0.9.0.2
 - servant-server == 0.18.2

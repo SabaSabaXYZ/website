@@ -1,6 +1,7 @@
 module Server where
 
 import ApiTypes
+import Control.Exception.Safe (handleAny)
 import Control.Monad ((<=<))
 import Control.Monad.IO.Class (liftIO)
 import Html
@@ -25,7 +26,7 @@ mainPage :: Maybe Theme -> Handler (Html ())
 mainPage = flip blogPost "index"
 
 blogPost :: Maybe Theme -> BlogId -> Handler (Html ())
-blogPost theme = htmlContainer theme . renderBlog <=< findBlogPost
+blogPost theme blogId = handleAny (blogNotFound theme blogId) $ findBlogPost blogId >>= htmlContainer theme . renderBlog
 
 findBlogPost :: BlogId -> Handler T.Text
 findBlogPost = liftIO . T.readFile . (<>) staticPath . flip (<>) (T.unpack markdownExtension)

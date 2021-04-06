@@ -1,6 +1,7 @@
 module Html where
 
 import ApiTypes
+import Control.Exception.Safe (SomeException)
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO(..), liftIO)
 import Data.List (sort)
@@ -41,6 +42,12 @@ blogListItem theme (blogLink -> (Just file)) = li_ [class_ "blog-link"] $ a_ [hr
 
 blogLink :: T.Text -> Maybe T.Text
 blogLink = T.stripSuffix markdownExtension
+
+blogNotFound :: (MonadIO m) => Maybe Theme -> BlogId -> SomeException -> m (Html ())
+blogNotFound theme blogId _ = htmlContainer theme $ do
+  div_ [class_ "not-found"] $ do
+    h1_ $ toHtml @T.Text "Blog not found"
+    p_ $ toHtml $ "Blog post " <> T.pack blogId <> " could not found."
 
 siteTitle :: T.Text
 siteTitle = "My Site"
