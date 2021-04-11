@@ -3,3 +3,5 @@
 tags*
 .vagrant/
 static/
+Dashboard/**
+jmeter.log
