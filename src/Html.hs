@@ -81,7 +81,10 @@ blogNotFound :: (MonadIO m) => Maybe Theme -> BlogId -> SomeException -> m (Html
 blogNotFound theme blogId _ = htmlContainer theme Nothing $ do
   div_ [class_ "not-found"] $ do
     h1_ $ toHtml @T.Text "Blog not found"
-    p_ $ toHtml $ "Blog post " <> T.pack blogId <> " could not found."
+    p_ $ do
+      toHtml @T.Text "Blog post "
+      em_ $ toHtml $ T.pack blogId
+      toHtml @T.Text " could not found."
 
 siteTitle :: T.Text
 siteTitle = "My Site"
