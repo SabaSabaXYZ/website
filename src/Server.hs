@@ -2,7 +2,6 @@ module Server where
 
 import ApiTypes
 import Control.Exception.Safe (handleAny)
-import Control.Monad ((<=<))
 import Control.Monad.IO.Class (liftIO)
 import Data.Maybe (fromMaybe)
 import Html
@@ -11,6 +10,7 @@ import RenderBlog (renderBlog)
 import Servant
 import StyleSheet
 import qualified Clay as C
+import qualified Data.ByteString.Lazy as B
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
@@ -21,7 +21,7 @@ api :: Server Api
 api = styling :<|> page
 
 page :: Server Page
-page = changeTheme :<|> mainPage :<|> blogPost
+page = changeTheme :<|> imageLink :<|> mainPage :<|> blogPost
 
 mainPage :: Maybe Theme -> Handler (Html ())
 mainPage = flip blogPost defaultBlogId
@@ -34,6 +34,9 @@ findBlogPost = liftIO . T.readFile . (<>) staticPath . flip (<>) (T.unpack markd
 
 changeTheme :: Theme -> BlogId -> Handler (Html ())
 changeTheme theme = blogPost (Just theme)
+
+imageLink :: ImageId -> Handler B.ByteString
+imageLink imageId = handleAny imageNotFound $ liftIO $ B.readFile $ imagePath <> imageId
 
 styling :: Maybe Theme -> Handler C.Css
 styling (fromMaybe defaultTheme -> theme) = pure $ getStyleFromTheme (themeType theme) $ C.rgba (themeRed theme) (themeGreen theme) (themeBlue theme) 1

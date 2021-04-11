@@ -4,6 +4,7 @@ import ApiTypes
 import Control.Exception.Safe (SomeException)
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO(..), liftIO)
+import Data.ByteString.Lazy (ByteString(..))
 import Data.List (sort)
 import Data.Maybe (fromMaybe)
 import Lucid
@@ -73,6 +74,9 @@ blogListItem theme (blogLink -> (Just file)) = li_ [class_ "blog-link"] $ a_ [hr
 blogLink :: T.Text -> Maybe T.Text
 blogLink = T.stripSuffix markdownExtension
 
+imageNotFound :: (MonadIO m) => SomeException -> m ByteString
+imageNotFound _ = pure mempty
+
 blogNotFound :: (MonadIO m) => Maybe Theme -> BlogId -> SomeException -> m (Html ())
 blogNotFound theme blogId _ = htmlContainer theme Nothing $ do
   div_ [class_ "not-found"] $ do
@@ -84,6 +88,9 @@ siteTitle = "My Site"
 
 staticPath :: FilePath
 staticPath = "static/"
+
+imagePath :: FilePath
+imagePath = staticPath <> "img/"
 
 markdownExtension :: T.Text
 markdownExtension = ".md"

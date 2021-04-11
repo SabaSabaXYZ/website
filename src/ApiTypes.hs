@@ -2,7 +2,9 @@ module ApiTypes where
 
 import Control.Monad ((<=<))
 import CssContentType
+import Data.ByteString.Lazy (ByteString(..))
 import GHC.Generics (Generic(..))
+import ImageContentType
 import Lucid
 import Servant
 import Servant.HTML.Lucid (HTML(..))
@@ -11,14 +13,16 @@ import qualified Clay as C
 import qualified Data.Text as T
 
 type Api = Styling :<|> Page
-type Page = ChangeTheme :<|> MainPage :<|> BlogPost
+type Page = ChangeTheme :<|> ImageLink :<|> MainPage :<|> BlogPost
 type MainPage = ThemeParam :> Get '[HTML] (Html ())
 type BlogPost = ThemeParam :> Capture "id" BlogId :> Get '[HTML] (Html ())
+type ImageLink = "image" :> Capture "id" ImageId :> Get '[PNG] ByteString
 type Styling = "style" :> ThemeParam :> Get '[CSS] C.Css
 type ChangeTheme = ReqBody '[FormUrlEncoded] Theme :> Capture "id" BlogId :> Post '[HTML] (Html ())
 type ThemeParam = QueryParam "theme" Theme
 
 type BlogId = FilePath
+type ImageId = FilePath
 
 data LightDark = Light | Dark deriving (Eq)
 

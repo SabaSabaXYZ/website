@@ -16,6 +16,7 @@ makeStyle :: ColorAction -> Color -> Css
 makeStyle colorAction themeColor = do
   html ? maxWidth (pct 100)
   bodyStyle colorAction themeColor
+  imageStyle
   paragraphStyle
   codeStyle
   headerStyle
@@ -33,6 +34,13 @@ bodyStyle action themeColor = body ? do
   maxWidth $ rem 48
   padding (rem 0.25) (rem 0.25) (rem 0.25) (rem 0.25)
   fontSize $ px 16
+
+imageStyle :: Css
+imageStyle = img ? do
+  display block
+  marginLeft auto
+  marginRight auto
+  width $ pct 100
 
 paragraphStyle :: Css
 paragraphStyle = p ? do
