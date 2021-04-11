@@ -27,6 +27,7 @@ dependencies:
 - cmark == 0.6
 - containers == 0.6.2.1
 - directory == 1.3.6.0
+- http-api-data == 0.4.1.1
 - http-media == 0.8.0.0
 - lucid == 2.9.12.1
 - mtl == 2.2.2
@@ -40,6 +41,7 @@ dependencies:
 
 default-extensions:
 - DataKinds
+- DeriveGeneric
 - FlexibleContexts
 - FlexibleInstances
 - GADTs

@@ -13,9 +13,10 @@ import System.Directory (getDirectoryContents)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
-htmlContainer :: (MonadIO m) => Maybe Theme -> Html a -> m (Html ())
-htmlContainer theme contents = do
+htmlContainer :: (MonadIO m) => Maybe Theme -> Maybe BlogId -> Html a -> m (Html ())
+htmlContainer theme maybeBlogId contents = do
   nav <- navigation theme
+  themeConfig <- themeConfiguration theme maybeBlogId
   pure $ sanitizeHtml $ void $ with doctypehtml_ [lang_ "en"] $ do
     head_ $ do
       title_ $ toHtml siteTitle
@@ -25,6 +26,35 @@ htmlContainer theme contents = do
     body_ $ do
       div_ [role_ "main"] contents
       nav
+      themeConfig
+
+themeConfiguration :: (MonadIO m) => Maybe Theme -> Maybe BlogId -> m (Html ())
+themeConfiguration (fromMaybe defaultTheme -> theme) (fromMaybe defaultBlogId -> blogId) = pure $ do
+  div_ [role_ "banner"] $ do
+    h2_ "Theme:"
+    form_ [action_ $ safeChangeThemeLink blogId, method_ "POST"] $ do
+      lightDarkInput (themeType theme)
+      colorInput (themeRed theme) "Red"
+      colorInput (themeGreen theme) "Green"
+      colorInput (themeBlue theme) "Blue"
+      div_ [class_ "input"] $ input_ [type_ "submit"]
+
+lightDarkInput :: LightDark -> Html ()
+lightDarkInput lightDark = do
+  let fieldId = "themeType"
+  let useDark = lightDark == Dark
+  div_ [class_ "input"] $ do
+    label_ [for_ fieldId] $ toHtml @T.Text "Style"
+    select_ [id_ fieldId, name_ fieldId] $ do
+      option_ (attributes "dark" useDark) $ toHtml @T.Text "Dark"
+      option_ (attributes "light" $ not useDark) $ toHtml @T.Text "Light"
+  where
+    attributes value isSelected = if isSelected then [value_ value, selected_ mempty] else [value_ value]
+
+colorInput :: Integer -> T.Text -> Html ()
+colorInput value label = let fieldId = "theme" <> label in div_ [class_ "input"] $ do
+  label_ [for_ fieldId] $ toHtml label
+  input_ [id_ fieldId, name_ fieldId, value_ $ T.pack $ show value, type_ "number", min_ "0", max_ "255", step_ "1"]
 
 navigation :: (MonadIO m) => Maybe Theme -> m (Html ())
 navigation theme = do
@@ -44,7 +74,7 @@ blogLink :: T.Text -> Maybe T.Text
 blogLink = T.stripSuffix markdownExtension
 
 blogNotFound :: (MonadIO m) => Maybe Theme -> BlogId -> SomeException -> m (Html ())
-blogNotFound theme blogId _ = htmlContainer theme $ do
+blogNotFound theme blogId _ = htmlContainer theme Nothing $ do
   div_ [class_ "not-found"] $ do
     h1_ $ toHtml @T.Text "Blog not found"
     p_ $ toHtml $ "Blog post " <> T.pack blogId <> " could not found."

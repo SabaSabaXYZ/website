@@ -21,6 +21,7 @@ makeStyle colorAction themeColor = do
   headerStyle
   linkStyle colorAction themeColor
   navigationStyle
+  bannerStyle
 
 bodyStyle :: ColorAction -> Color -> Css
 bodyStyle action themeColor = body ? do
@@ -75,10 +76,19 @@ codeStyle = do
     overflowX scroll
 
 navigationStyle :: Css
-navigationStyle = do
-  div # ("role" @= "navigation") |> h2 ? smallHeaderStyle
-  where
-    smallHeaderStyle = do
-      fontSize $ rem 1.414
-      paddingBottom $ rem 0
-      textAlign inherit
+navigationStyle = div # ("role" @= "navigation") |> h2 ? smallHeaderStyle
+
+bannerStyle :: Css
+bannerStyle = do
+  let bannerDiv = div # ("role" @= "banner")
+  let inputDiv = bannerDiv |> form |> div # ("class" @= "input")
+  bannerDiv |> h2 ? smallHeaderStyle
+  inputDiv ? marginTop (em 0.5)
+  inputDiv |> (select <> input # ("type" @= "number")) ? marginLeft (em 1)
+  inputDiv |> label ? fontWeight bold
+
+smallHeaderStyle :: Css
+smallHeaderStyle = do
+  fontSize $ rem 1.414
+  paddingBottom $ rem 0
+  textAlign inherit

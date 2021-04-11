@@ -4,6 +4,7 @@ import ApiTypes
 import Control.Exception.Safe (handleAny)
 import Control.Monad ((<=<))
 import Control.Monad.IO.Class (liftIO)
+import Data.Maybe (fromMaybe)
 import Html
 import Lucid
 import RenderBlog (renderBlog)
@@ -20,20 +21,22 @@ api :: Server Api
 api = styling :<|> page
 
 page :: Server Page
-page = mainPage :<|> blogPost
+page = changeTheme :<|> mainPage :<|> blogPost
 
 mainPage :: Maybe Theme -> Handler (Html ())
-mainPage = flip blogPost "index"
+mainPage = flip blogPost defaultBlogId
 
 blogPost :: Maybe Theme -> BlogId -> Handler (Html ())
-blogPost theme blogId = handleAny (blogNotFound theme blogId) $ findBlogPost blogId >>= htmlContainer theme . renderBlog
+blogPost theme blogId = handleAny (blogNotFound theme blogId) $ findBlogPost blogId >>= htmlContainer theme (Just blogId) . renderBlog
 
 findBlogPost :: BlogId -> Handler T.Text
 findBlogPost = liftIO . T.readFile . (<>) staticPath . flip (<>) (T.unpack markdownExtension)
 
+changeTheme :: Theme -> BlogId -> Handler (Html ())
+changeTheme theme = blogPost (Just theme)
+
 styling :: Maybe Theme -> Handler C.Css
-styling Nothing = pure $ darkStyle C.black
-styling (Just theme) = pure $ getStyleFromTheme (themeType theme) $ C.rgba (themeRed theme) (themeGreen theme) (themeBlue theme) 1
+styling (fromMaybe defaultTheme -> theme) = pure $ getStyleFromTheme (themeType theme) $ C.rgba (themeRed theme) (themeGreen theme) (themeBlue theme) 1
 
 getStyleFromTheme :: LightDark -> C.Color -> C.Css
 getStyleFromTheme Dark = darkStyle
