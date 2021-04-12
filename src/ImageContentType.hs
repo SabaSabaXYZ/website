@@ -4,10 +4,10 @@ import Data.ByteString.Lazy (ByteString(..))
 import Network.HTTP.Media ((//), (/:))
 import Servant
 
-data PNG
+data IMG
 
-instance Accept PNG where
-  contentType _ = "image" // "png"
+instance Accept IMG where
+  contentType _ = "image" // "*"
 
-instance MimeRender PNG ByteString where
+instance MimeRender IMG ByteString where
   mimeRender _ val = val
