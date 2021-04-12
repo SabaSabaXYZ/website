@@ -3,6 +3,7 @@ module Html where
 import ApiTypes
 import Control.Exception.Safe (SomeException)
 import Control.Monad (void)
+import Control.Monad.Error.Class (MonadError(..))
 import Control.Monad.IO.Class (MonadIO(..), liftIO)
 import Data.ByteString.Lazy (ByteString(..))
 import Data.List (sort)
@@ -74,17 +75,19 @@ blogListItem theme (blogLink -> (Just file)) = li_ [class_ "blog-link"] $ a_ [hr
 blogLink :: T.Text -> Maybe T.Text
 blogLink = T.stripSuffix markdownExtension
 
-imageNotFound :: (MonadIO m) => SomeException -> m ByteString
-imageNotFound _ = pure mempty
+imageNotFound :: (MonadError ServerError m) => SomeException -> m a
+imageNotFound _ = throwError $ err404 { errBody = "No image found." }
 
-blogNotFound :: (MonadIO m) => Maybe Theme -> BlogId -> SomeException -> m (Html ())
-blogNotFound theme blogId _ = htmlContainer theme Nothing $ do
-  div_ [class_ "not-found"] $ do
-    h1_ $ toHtml @T.Text "Blog not found"
-    p_ $ do
-      toHtml @T.Text "Blog post "
-      em_ $ toHtml $ T.pack blogId
-      toHtml @T.Text " could not found."
+blogNotFound :: (MonadIO m, MonadError ServerError m) => Maybe Theme -> BlogId -> SomeException -> m a
+blogNotFound theme blogId _ = do
+  body <- htmlContainer theme Nothing $ do
+    div_ [class_ "not-found"] $ do
+      h1_ $ toHtml @T.Text "Blog not found"
+      p_ $ do
+        toHtml @T.Text "Blog post "
+        em_ $ toHtml $ T.pack blogId
+        toHtml @T.Text " could not found."
+  throwError $ err404 { errBody = renderBS body }
 
 siteTitle :: T.Text
 siteTitle = "My Site"
