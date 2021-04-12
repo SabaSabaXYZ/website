@@ -23,7 +23,8 @@ htmlContainer theme maybeBlogId contents = do
     head_ $ do
       title_ $ toHtml siteTitle
       meta_ [charset_ "utf8"]
-      meta_ [name_ "description", content_ "width=device-width"]
+      meta_ [name_ "description", content_ "A personal website with custom theming"]
+      meta_ [name_ "viewport", content_ "width=device-width, initial-scale=1.0"]
       link_ [rel_ "stylesheet", href_ $ safeStylingLink theme]
     body_ $ do
       div_ [role_ "main"] contents
@@ -90,7 +91,7 @@ blogNotFound theme blogId _ = do
   throwError $ err404 { errBody = renderBS body }
 
 siteTitle :: T.Text
-siteTitle = "My Site"
+siteTitle = "Saba's Site"
 
 staticPath :: FilePath
 staticPath = "static/"
