@@ -12,7 +12,7 @@ import StyleSheet
 import qualified Clay as C
 import qualified Data.ByteString.Lazy as B
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
+import qualified Data.Text.IO.Utf8 as T
 
 app :: Application
 app = serve apiProxy api

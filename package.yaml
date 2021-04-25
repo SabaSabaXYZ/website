@@ -38,6 +38,7 @@ dependencies:
 - tagsoup == 0.14.8
 - text == 1.2.4.1
 - warp == 3.3.14
+- with-utf8 == 1.0.2.2
 
 default-extensions:
 - DataKinds
