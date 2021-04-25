@@ -30,6 +30,7 @@ bodyStyle action themeColor = body ? do
   fontColor $ action 0.75 themeColor
   fontFamily ["Helvetica"] [sansSerif]
   fontWeight $ weight 300
+  textAlign justify
   margin (px 0) auto auto auto
   maxWidth $ rem 48
   padding (rem 0.25) (rem 0.25) (rem 0.25) (rem 0.25)
