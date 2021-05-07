@@ -5,13 +5,17 @@ import Control.Exception.Safe (SomeException)
 import Control.Monad (void)
 import Control.Monad.Error.Class (MonadError(..))
 import Control.Monad.IO.Class (MonadIO(..), liftIO)
+import Data.Bifunctor (first)
 import Data.ByteString.Lazy (ByteString(..))
-import Data.List (sort)
+import Data.List (sortOn)
 import Data.Maybe (fromMaybe)
+import Data.Time.Clock (UTCTime(..))
+import Data.Time.Format (formatTime, defaultTimeLocale, iso8601DateFormat)
 import Lucid
 import Sanitize
 import Servant
-import System.Directory (getDirectoryContents)
+import System.Directory (getDirectoryContents, getModificationTime)
+import System.FilePath.Posix ((</>))
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
@@ -67,11 +71,17 @@ navigation theme = do
     blogListItems
 
 blogList :: (MonadIO m) => Maybe Theme -> m (Html ())
-blogList theme = liftIO $ getDirectoryContents staticPath >>= pure . foldMap (blogListItem theme) . sort . filter (T.isSuffixOf markdownExtension) . fmap T.pack
+blogList theme = liftIO $ getDirectoryContents staticPath >>= mapM blogModificationTime . fmap T.unpack . filter (T.isSuffixOf markdownExtension) . fmap T.pack >>= pure . foldMap (blogListItem theme) . sortOn snd . fmap (first T.pack)
 
-blogListItem :: Maybe Theme -> T.Text -> Html ()
-blogListItem theme (blogLink -> Nothing) = pure $ mempty
-blogListItem theme (blogLink -> (Just file)) = li_ [class_ "blog-link"] $ a_ [href_ $ safeBlogLink theme $ T.unpack file] $ toHtml file
+blogModificationTime :: (MonadIO m) => FilePath -> m (FilePath, UTCTime)
+blogModificationTime filePath = liftIO $ getModificationTime (staticPath </> filePath) >>= pure . (,) filePath
+
+blogListItem :: Maybe Theme -> (T.Text, UTCTime) -> Html ()
+blogListItem theme (first blogLink -> (Nothing, _)) = pure $ mempty
+blogListItem theme (first blogLink -> (Just file, time)) = li_ [class_ "blog-link"] $ a_ [href_ $ safeBlogLink theme $ T.unpack file] $ toHtml $ blogNameWithDate file time
+
+blogNameWithDate :: T.Text -> UTCTime -> T.Text
+blogNameWithDate file time = file <> " (last modified: " <> T.pack (formatTime defaultTimeLocale (iso8601DateFormat Nothing) $ utctDay time) <> ")"
 
 blogLink :: T.Text -> Maybe T.Text
 blogLink = T.stripSuffix markdownExtension
@@ -94,10 +104,10 @@ siteTitle :: T.Text
 siteTitle = "Saba's Site"
 
 staticPath :: FilePath
-staticPath = "static/"
+staticPath = "static"
 
 imagePath :: FilePath
-imagePath = staticPath <> "img/"
+imagePath = staticPath </> "img"
 
 markdownExtension :: T.Text
 markdownExtension = ".md"

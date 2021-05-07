@@ -9,6 +9,7 @@ import Lucid
 import RenderBlog (renderBlog)
 import Servant
 import StyleSheet
+import System.FilePath.Posix ((</>))
 import qualified Clay as C
 import qualified Data.ByteString.Lazy as B
 import qualified Data.Text as T
@@ -30,13 +31,13 @@ blogPost :: Maybe Theme -> BlogId -> Handler (Html ())
 blogPost theme blogId = handleAny (blogNotFound theme blogId) $ findBlogPost blogId >>= htmlContainer theme (Just blogId) . renderBlog
 
 findBlogPost :: BlogId -> Handler T.Text
-findBlogPost = liftIO . T.readFile . (<>) staticPath . flip (<>) (T.unpack markdownExtension)
+findBlogPost = liftIO . T.readFile . (</>) staticPath . flip (<>) (T.unpack markdownExtension)
 
 changeTheme :: Theme -> BlogId -> Handler (Html ())
 changeTheme theme = blogPost (Just theme)
 
 imageLink :: ImageId -> Handler B.ByteString
-imageLink imageId = handleAny imageNotFound $ liftIO $ B.readFile $ imagePath <> imageId
+imageLink imageId = handleAny imageNotFound $ liftIO $ B.readFile $ imagePath </> imageId
 
 styling :: Maybe Theme -> Handler C.Css
 styling (fromMaybe defaultTheme -> theme) = pure $ getStyleFromTheme (themeType theme) $ C.rgba (themeRed theme) (themeGreen theme) (themeBlue theme) 1
