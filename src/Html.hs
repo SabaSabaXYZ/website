@@ -5,7 +5,6 @@ import Configuration (ServerConfiguration(..))
 import Control.Exception.Safe (SomeException)
 import Control.Monad (void)
 import Control.Monad.Error.Class (MonadError(..))
-import Control.Monad.IO.Class (MonadIO(..), liftIO)
 import Control.Monad.Reader (MonadReader(..))
 import Data.Bifunctor (first)
 import Data.ByteString.Lazy (ByteString(..))
@@ -16,12 +15,13 @@ import Data.Time.Format (formatTime, defaultTimeLocale, iso8601DateFormat)
 import Lucid
 import Sanitize
 import Servant
+import ServerMonad (MonadDirectory(..))
 import System.Directory (getDirectoryContents, getModificationTime)
 import System.FilePath.Posix ((</>))
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
-htmlContainer :: (MonadIO m) => Maybe Theme -> Maybe BlogId -> Html a -> m (Html ())
+htmlContainer :: (MonadDirectory m) => Maybe Theme -> Maybe BlogId -> Html a -> m (Html ())
 htmlContainer theme maybeBlogId contents = do
   nav <- navigation theme
   themeConfig <- themeConfiguration theme maybeBlogId
@@ -37,7 +37,7 @@ htmlContainer theme maybeBlogId contents = do
       nav
       themeConfig
 
-themeConfiguration :: (MonadIO m) => Maybe Theme -> Maybe BlogId -> m (Html ())
+themeConfiguration :: (MonadDirectory m) => Maybe Theme -> Maybe BlogId -> m (Html ())
 themeConfiguration (fromMaybe defaultTheme -> theme) (fromMaybe defaultBlogId -> blogId) = pure $ do
   div_ [role_ "banner"] $ do
     h2_ "Theme:"
@@ -65,18 +65,18 @@ colorInput value label = let fieldId = "theme" <> label in div_ [class_ "input"]
   label_ [for_ fieldId] $ toHtml label
   input_ [id_ fieldId, name_ fieldId, value_ $ T.pack $ show value, type_ "number", min_ "0", max_ "255", step_ "1"]
 
-navigation :: (MonadIO m) => Maybe Theme -> m (Html ())
+navigation :: (MonadDirectory m) => Maybe Theme -> m (Html ())
 navigation theme = do
   blogListItems <- blogList theme >>= pure . ul_ [class_ "blog-links"]
   pure $ div_ [role_ "navigation"] $ do
     h2_ "Articles:"
     blogListItems
 
-blogList :: (MonadIO m) => Maybe Theme -> m (Html ())
-blogList theme = liftIO $ getDirectoryContents staticPath >>= mapM blogModificationTime . fmap T.unpack . filter (T.isSuffixOf markdownExtension) . fmap T.pack >>= pure . foldMap (blogListItem theme) . sortOn snd . fmap (first T.pack)
+blogList :: (MonadDirectory m) => Maybe Theme -> m (Html ())
+blogList theme = readDirectory staticPath >>= mapM blogModificationTime . fmap T.unpack . filter (T.isSuffixOf markdownExtension) >>= pure . foldMap (blogListItem theme) . sortOn snd . fmap (first T.pack)
 
-blogModificationTime :: (MonadIO m) => FilePath -> m (FilePath, UTCTime)
-blogModificationTime filePath = liftIO $ getModificationTime (staticPath </> filePath) >>= pure . (,) filePath
+blogModificationTime :: (MonadDirectory m) => FilePath -> m (FilePath, UTCTime)
+blogModificationTime filePath = readModificationTime (staticPath </> filePath) >>= pure . (,) filePath
 
 blogListItem :: Maybe Theme -> (T.Text, UTCTime) -> Html ()
 blogListItem theme (first blogLink -> (Nothing, _)) = pure $ mempty
@@ -91,7 +91,7 @@ blogLink = T.stripSuffix markdownExtension
 imageNotFound :: (MonadError ServerError m) => SomeException -> m a
 imageNotFound _ = throwError $ err404 { errBody = "No image found." }
 
-blogNotFound :: (MonadIO m, MonadError ServerError m, MonadReader ServerConfiguration m) => Maybe Theme -> BlogId -> SomeException -> m a
+blogNotFound :: (MonadDirectory m, MonadError ServerError m, MonadReader ServerConfiguration m) => Maybe Theme -> BlogId -> SomeException -> m a
 blogNotFound theme blogId exceptionReason = do
   showExceptions <- ask >>= pure . configShowExceptions
   body <- htmlContainer theme Nothing $ do
