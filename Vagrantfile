@@ -26,6 +26,13 @@ cd /vagrant
 sudo stack --allow-different-user exec website config.json
 SCRIPT
 
+$deploy = <<-SCRIPT
+cd /vagrant
+sudo stack --allow-different-user install
+cd /root/.local/bin
+tar -cvjf website.tar.bz website
+SCRIPT
+
 Vagrant.configure("2") do |config|
   config.vm.box = "debian/buster64"
 
@@ -45,4 +52,5 @@ Vagrant.configure("2") do |config|
   config.vm.provision "test", type: "shell", run: "never", inline: $test
   config.vm.provision "run", type: "shell", run: "never", inline: $run
   config.vm.provision "runconf", type: "shell", run: "never", inline: $runconf
+  config.vm.provision "deploy", type: "shell", run: "never", inline: $deploy
 end
