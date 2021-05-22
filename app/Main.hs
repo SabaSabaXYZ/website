@@ -1,7 +1,6 @@
 module Main where
 
 import Configuration (ServerConfiguration(..), defaultConfiguration, readConfiguration)
-import Control.Monad ((<=<))
 import Control.Monad.IO.Class (liftIO)
 import Data.Either (either)
 import Data.Maybe (maybe, listToMaybe)
