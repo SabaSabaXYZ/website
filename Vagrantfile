@@ -20,6 +20,12 @@ cd /vagrant
 sudo stack --allow-different-user exec website
 SCRIPT
 
+$runconf = <<-SCRIPT
+sudo killall website
+cd /vagrant
+sudo stack --allow-different-user exec website config.json
+SCRIPT
+
 Vagrant.configure("2") do |config|
   config.vm.box = "debian/buster64"
 
@@ -38,4 +44,5 @@ Vagrant.configure("2") do |config|
   config.vm.provision "build", type: "shell", run: "never", inline: $build
   config.vm.provision "test", type: "shell", run: "never", inline: $test
   config.vm.provision "run", type: "shell", run: "never", inline: $run
+  config.vm.provision "runconf", type: "shell", run: "never", inline: $runconf
 end

@@ -1,10 +1,12 @@
 module Html where
 
 import ApiTypes
+import Configuration (ServerConfiguration(..))
 import Control.Exception.Safe (SomeException)
 import Control.Monad (void)
 import Control.Monad.Error.Class (MonadError(..))
 import Control.Monad.IO.Class (MonadIO(..), liftIO)
+import Control.Monad.Reader (MonadReader(..))
 import Data.Bifunctor (first)
 import Data.ByteString.Lazy (ByteString(..))
 import Data.List (sortOn)
@@ -89,8 +91,9 @@ blogLink = T.stripSuffix markdownExtension
 imageNotFound :: (MonadError ServerError m) => SomeException -> m a
 imageNotFound _ = throwError $ err404 { errBody = "No image found." }
 
-blogNotFound :: (MonadIO m, MonadError ServerError m) => Maybe Theme -> BlogId -> SomeException -> m a
-blogNotFound theme blogId _ = do
+blogNotFound :: (MonadIO m, MonadError ServerError m, MonadReader ServerConfiguration m) => Maybe Theme -> BlogId -> SomeException -> m a
+blogNotFound theme blogId exceptionReason = do
+  showExceptions <- ask >>= pure . configShowExceptions
   body <- htmlContainer theme Nothing $ do
     div_ [class_ "not-found"] $ do
       h1_ $ toHtml @T.Text "Blog not found"
@@ -98,6 +101,7 @@ blogNotFound theme blogId _ = do
         toHtml @T.Text "Blog post "
         em_ $ toHtml $ T.pack blogId
         toHtml @T.Text " could not found."
+      if showExceptions then p_ $ toHtml $ T.pack $ show exceptionReason else pure ()
   throwError $ err404 { errBody = renderBS body }
 
 siteTitle :: T.Text

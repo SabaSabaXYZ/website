@@ -9,12 +9,18 @@ import Network.Wai.Handler.Warp (run)
 import Server
 import ServerMonad (ConfigMonad(..), ServerMonad(..))
 import System.Environment (getArgs)
-import Text.Read (readMaybe)
+import System.IO (hPutStrLn, stderr)
 
 main :: IO ()
-main = runConfigMonad getConfiguration >>= flip run app . configPort
+main = do
+  config <- runConfigMonad getConfiguration
+  printError $ show config
+  flip run (app config) $ configPort config
 
 getConfiguration :: ConfigMonad ServerConfiguration
 getConfiguration = do
-  configFilePath <- liftIO getArgs >>= pure . (readMaybe <=< listToMaybe)
+  configFilePath <- liftIO getArgs >>= pure . listToMaybe
   maybe (pure $ Right defaultConfiguration) readConfiguration configFilePath >>= pure . either error id
+
+printError :: String -> IO ()
+printError = hPutStrLn stderr

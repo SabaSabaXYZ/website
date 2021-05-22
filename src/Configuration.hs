@@ -11,7 +11,7 @@ class (Monad m) => MonadReadConfig m where
 
 data ServerConfiguration = ServerConfiguration { configPort :: !Port
                                                , configShowExceptions :: !Bool
-                                               } deriving (Generic)
+                                               } deriving (Show, Generic)
 
 instance FromJSON ServerConfiguration
 
