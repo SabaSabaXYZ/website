@@ -21,13 +21,14 @@ import System.FilePath.Posix ((</>))
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
-htmlContainer :: (MonadDirectory m) => Maybe Theme -> Maybe BlogId -> Html a -> m (Html ())
+htmlContainer :: (MonadDirectory m, MonadReader ServerConfiguration m) => Maybe Theme -> Maybe BlogId -> Html a -> m (Html ())
 htmlContainer theme maybeBlogId contents = do
   nav <- navigation theme
   themeConfig <- themeConfiguration theme maybeBlogId
+  title <- siteTitle
   pure $ sanitizeHtml $ void $ with doctypehtml_ [lang_ "en"] $ do
     head_ $ do
-      title_ $ toHtml siteTitle
+      title_ $ toHtml title
       meta_ [charset_ "utf8"]
       meta_ [name_ "description", content_ "A personal website with custom theming"]
       meta_ [name_ "viewport", content_ "width=device-width, initial-scale=1.0"]
@@ -104,8 +105,8 @@ blogNotFound theme blogId exceptionReason = do
       if showExceptions then p_ $ toHtml $ T.pack $ show exceptionReason else pure ()
   throwError $ err404 { errBody = renderBS body }
 
-siteTitle :: T.Text
-siteTitle = "Saba's Site"
+siteTitle :: (MonadReader ServerConfiguration m) => m T.Text
+siteTitle = ask >>= pure . configTitle
 
 staticPath :: FilePath
 staticPath = "static"

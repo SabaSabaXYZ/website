@@ -1,4 +1,5 @@
 {
   "configPort": 5000,
-  "configShowExceptions": true
+  "configShowExceptions": true,
+  "configTitle": "Saba's Site"
 }
