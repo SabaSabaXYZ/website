@@ -47,9 +47,11 @@ paragraphStyle :: Css
 paragraphStyle = p ? do
   fontSize $ rem 1
   marginBottom $ rem 1.3
+  lineHeight $ em 1.4
 
 linkStyle :: ColorAction -> Color -> Css
 linkStyle action themeColor = do
+  ul # ("class" @= "blog-links") ? lineHeight (em 1.4)
   let regularColor = fontColor $ action 0.60 $ themeColor +. 0x40
   let visitedColor = fontColor $ action 0.60 $ themeColor -. 0x40
   let highlightedColor = fontColor $ action 0.75 $ themeColor +. 0x50
