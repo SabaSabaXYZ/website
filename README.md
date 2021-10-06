@@ -20,3 +20,11 @@ One of these files must be called `index.md` as it serves as the main page of th
 
 To host images, create a directory in `static` called `img` (i.e. `static/img`).
 Place some image files in `img`, and refer to these images in the markdown files using `image/file.png`.
+
+## Running on a web server
+
+tar -xvjf website.tar.bz
+./website config.json
+
+bg %1
+disown -h %1
