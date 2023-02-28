@@ -1,5 +1,7 @@
 # website
 
+[![Haskell CI](https://github.com/SabaSabaXYZ/website/actions/workflows/haskell.yml/badge.svg)](https://github.com/SabaSabaXYZ/website/actions/workflows/haskell.yml)
+
 ## Build and run instructions
 
 Install Vagrant and VirtualBox.
