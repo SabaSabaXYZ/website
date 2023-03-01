@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: servant-lucid-0.9.0.2@sha256:693278d574dba7313e931200118424762c02682bbc654e8866be4e6d1c73d816,1803
+    pantry-tree:
+      size: 392
+      sha256: c5635bc53887b81087c3430341790d45cd4063340a0baa62bedd2e77ed4aa84d
+  original:
+    hackage: servant-lucid-0.9.0.2@sha256:693278d574dba7313e931200118424762c02682bbc654e8866be4e6d1c73d816,1803
 snapshots:
 - completed:
     size: 565712
